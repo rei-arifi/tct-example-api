@@ -1,0 +1,26 @@
+{
+  "name": "ping-sdk",
+  "version": "1.0.0",
+  "description": "CLI tool to interact with the Ping API",
+  "main": "dist/index.js",
+  "bin": {
+    "ping-cli": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/cli.js",
+    "dev": "ts-node src/cli.ts",
+    "generate-client": "docker run --rm -it -v$(pwd)/..:/workdir --workdir=/workdir openapitools/openapi-generator-cli generate -i ./api/openapi.yaml -g typescript-axios -o ./sdk/src/client"
+  },
+  "dependencies": {
+    "@openapitools/openapi-generator-cli": "^2.6.0",
+    "axios": "^1.6.2",
+    "commander": "^11.1.0",
+    "openapi-client-axios": "^7.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  }
+}

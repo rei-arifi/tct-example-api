@@ -1,0 +1,5 @@
+node_modules
+*.tgz
+api/counter.json
+sdk/dist/
+sdk/src/client/

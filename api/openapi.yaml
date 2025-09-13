@@ -1,0 +1,112 @@
+openapi: 3.0.0
+info:
+  title: Ping Counter API
+  description: A simple API that counts ping requests
+  version: 1.0.0
+  contact:
+    name: API Support
+    url: http://example.com/support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+
+paths:
+  /ping:
+    get:
+      summary: Ping the server
+      description: Responds with 'pong' and increments the ping counter
+      operationId: ping
+      responses:
+        '200':
+          description: Successful ping response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PingResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ping/count:
+    get:
+      summary: Get ping count
+      description: Returns the total number of pings made to the server
+      operationId: getPingCount
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    PingResponse:
+      type: object
+      required:
+        - success
+        - message
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        message:
+          type: string
+          description: Response message
+          example: pong
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the response in ISO 8601 format
+          example: 2025-09-13T09:30:00.000Z
+
+    CountResponse:
+      type: object
+      required:
+        - success
+        - count
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+          example: true
+        count:
+          type: integer
+          format: int64
+          description: Total number of pings made to the server
+          example: 42
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the response in ISO 8601 format
+          example: 2025-09-13T09:30:05.123Z
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          description: Always false for error responses
+          example: false
+        error:
+          type: string
+          description: Error message describing what went wrong
+          example: Failed to update counter
