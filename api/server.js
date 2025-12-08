@@ -25,6 +25,7 @@ app.use(
     }),
 );
 
+// test comment
 // Ping endpoint with counter
 app.get('/api/ping', async (req, res) => {
   try {

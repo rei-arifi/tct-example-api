@@ -1,4 +1,6 @@
 openapi: 3.0.0
+
+
 info:
   title: Ping Counter API
   description: A simple API that counts ping requests
