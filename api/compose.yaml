@@ -1,0 +1,12 @@
+services:
+  whoami:
+    image: traefik/whoami
+    container_name: test_whoami_compose
+    ports:
+      - "80:80"
+
+  ubuntu_server:
+    image: ubuntu
+    stdin_open: true
+    tty: true
+
