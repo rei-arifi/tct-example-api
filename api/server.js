@@ -26,6 +26,10 @@ app.use(
 );
 
 // test comment
+app.get("/health/live", async(req, res) => {
+    console.log("ok")
+})
+
 // Ping endpoint with counter
 app.get('/api/ping', async (req, res) => {
   try {
