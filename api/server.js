@@ -26,6 +26,13 @@ app.use(
 );
 
 // test comment
+app.get("/health/live", async(req, res) => {
+    res.status(200).json({
+      success: true,
+      error: 'App is running'
+    });
+})
+
 // Ping endpoint with counter
 app.get('/api/ping', async (req, res) => {
   try {
