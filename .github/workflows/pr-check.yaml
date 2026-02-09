@@ -37,17 +37,17 @@ jobs:
           echo "PR_TITLE=$PR_TITLE" >> $GITHUB_ENV
           
       - name: Change level is patch
-        if: ${{ startsWith("${{ env.PR_TITLE }}", "fix:") }}
+        if: ${{ startsWith(env.PR_TITLE, "fix:") }}
         run: |+
           echo "CHANGE_LEVEL=patch" >> $GITHUB_ENV
           
       - name: Change level is minor
-        if: ${{ startsWith("${{ env.PR_TITLE }}", "feat:") }}
+        if: ${{ startsWith(env.PR_TITLE, "feat:") }}
         run: |+
           echo "CHANGE_LEVEL=minor" >> $GITHUB_ENV
           
       - name: Change level is major
-        if: ${{ startsWith("${{ env.PR_TITLE }}", "BREAKING_CHANGE:") }}
+        if: ${{ startsWith(env.PR_TITLE, "BREAKING_CHANGE:") }}
         run: |+
           echo "CHANGE_LEVEL=major" >> $GITHUB_ENV
           
