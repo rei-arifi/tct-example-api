@@ -15,6 +15,7 @@ on:
       - opened
       - reopened
       - synchronize
+      - edited
 
 jobs:
   # Verify that application has bumped semantic version
