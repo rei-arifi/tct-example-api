@@ -51,6 +51,13 @@ jobs:
         run: |+
           echo "CHANGE_LEVEL=major" >> $GITHUB_ENV
           
-      - name: debug change level
+      - name: Ensure CHANGE_LEVEL is set
         run: |+
-          echo "CHANGE_LEVEL: $CHANGE_LEVEL"
+          # Exit early if variable is set
+          test -z $CHANGE_LEVEL || exit 0
+
+          ERROR_MESSAGE="Error: CHANGE_LEVEL is not set. Please make sure the PR title begins with 'fix:', 'feat:', or 'BREAKING_CHANGE:'"
+          echo "$ERROR_MESSAGE"
+          echo "::error title=PR Title Validation Failed::$ERROR_MESSAGE" >> $GITHUB_SUMMARY
+          
+          exit 1
