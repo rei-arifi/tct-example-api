@@ -57,7 +57,7 @@ jobs:
           test -z $CHANGE_LEVEL || exit 0
 
           ERROR_MESSAGE="Error: CHANGE_LEVEL is not set. Please make sure the PR title begins with 'fix:', 'feat:', or 'BREAKING_CHANGE:'"
-          echo "$ERROR_MESSAGE"
-          echo "::error title=PR Title Validation Failed::$ERROR_MESSAGE" >> $GITHUB_STEP_SUMMARY
+          echo "::error $ERROR_MESSAGE"
+          echo "PR Title Validation Failed; $ERROR_MESSAGE" >> $GITHUB_STEP_SUMMARY
           
           exit 1
