@@ -24,12 +24,12 @@ jobs:
       # Pull the repository
       - uses: actions/checkout@v4
 
-      - name: Retreive main version
+      - name: Retreive current version
         run: |+
           #!/bin/bash
           
-          MAIN_VERSION=$(git show main:api/package.json | jq -r '.version')
-          echo "MAIN_VERSION=$MAIN_VERSION" >> $GITHUB_ENV
+          CURRENT_VERSION=$(git show main:api/package.json | jq -r '.version')
+          echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
 
       - name: Retreive change level
         run: |+
@@ -38,21 +38,20 @@ jobs:
           
       - name: Change level is patch
         if: ${{ startsWith(env.PR_TITLE, 'fix:') }}
-        run: |+
-          echo "CHANGE_LEVEL=patch" >> $GITHUB_ENV
+        run: echo "CHANGE_LEVEL=patch" >> $GITHUB_ENV
           
       - name: Change level is minor
         if: ${{ startsWith(env.PR_TITLE, 'feat:') }}
-        run: |+
-          echo "CHANGE_LEVEL=minor" >> $GITHUB_ENV
+        run: echo "CHANGE_LEVEL=minor" >> $GITHUB_ENV
           
       - name: Change level is major
         if: ${{ startsWith(env.PR_TITLE, 'BREAKING_CHANGE:') }}
-        run: |+
-          echo "CHANGE_LEVEL=major" >> $GITHUB_ENV
+        run: echo "CHANGE_LEVEL=major" >> $GITHUB_ENV
           
       - name: Ensure CHANGE_LEVEL is set
         run: |+
+          #!/bin/bash
+          
           # Exit early if variable is set
           test -z $CHANGE_LEVEL || exit 0
 
@@ -61,3 +60,23 @@ jobs:
           echo "PR Title Validation Failed; $ERROR_MESSAGE" >> $GITHUB_STEP_SUMMARY
           
           exit 1
+          
+      - name: Validate change level
+        working-directory: api
+        run: |+
+          #!/bin/bash
+
+          git show main:api/package.json > package.json
+          NEW_VERSION=$(npm version "$CHANGE_LEVEL")
+          
+          if ! [[ "$NEW_VERSION" == "v$CURRENT_VERSION"]]; then
+            ERROR_MESSAGE="Error: Change level is $CHANGE_LEVEL; Version "$NEW_VERSION" expected"
+            echo "::error $ERROR_MESSAGE"
+            echo "Change validation failed; $ERROR_MESSAGE" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          
+          exit 0
+          
+
+          
