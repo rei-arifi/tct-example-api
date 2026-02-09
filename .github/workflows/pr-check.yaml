@@ -1,0 +1,53 @@
+# Name of the workflow
+name: api-pr-check
+
+# pr-check = CI
+# automation
+# CD
+
+# Name of the specific run
+run-name: XXX
+
+# Specify when the workflow runs
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  # Verify that application has bumped semantic version
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Retreive main version
+        run: |+
+          #!/bin/bash
+          
+          MAIN_VERSION=$(git show main:api/package.json | jq -r '.version')
+          echo "MAIN_VERSION=$MAIN_VERSION" >> $GITHUB_ENV
+
+      - name: Retreive change level
+        run: |+
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          echo "PR_TITLE=$PR_TITLE" >> $GITHUB_ENV
+          
+      - name: Change level is patch
+        if: startsWith(${{ github.env.PR_TITLE }}, "fix:")
+        run: |+
+          echo "CHANGE_LEVEL=patch" >> $GITHUB_ENV
+          
+      - name: Change level is minor
+        if: startsWith(${{ github.env.PR_TITLE }}, "feat:")
+        run: |+
+          echo "CHANGE_LEVEL=minor" >> $GITHUB_ENV
+          
+      - name: Change level is major
+        if: startsWith(${{ github.env.PR_TITLE }}, "BREAKING_CHANGE:")
+        run: |+
+          echo "CHANGE_LEVEL=major" >> $GITHUB_ENV
+          
+      - name: debug change level
+        run: |+
+          echo "CHANGE_LEVEL: $CHANGE_LEVEL"
