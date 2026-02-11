@@ -1,0 +1,74 @@
+# Name of the workflow
+name: deploy
+
+# Name of the specific run
+run-name: ${{ github.event.input.environment }} / ${{ github.event.input.version }}
+
+# Specify when the workflow runs
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'App version to deploy'
+        required: true
+        default: ''
+        type: string
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - 'staging'
+          - 'production'
+
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      # Pull the repository
+      - uses: actions/checkout@v4
+      
+      # Forbid PR version deployments to production
+      - name: validate version/environment
+        if: ${{ github.event.input.environment == 'production' }}
+        run: |+
+          # `grep -v` will fail if it FINDS 'PR' in the input string
+          echo ${{ github.event.input.version }} | grep -v PR
+
+      # Check if image exists
+      - name: Check if image exists
+        run: |+
+          VERSION=$(curl -s https://hub.docker.com/v2/namespaces/0rxa/repositories/tct-example-api/tags \
+            | jq --arg VERSION ${{ github.event.input.version }} -r '.results[] | select( .name == $VERSION ).name')
+          
+          test -z $VERSION && exit 1
+      
+      
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [ "validate" ]
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@0e613a0980cbf65ed5b322eb7a1e075d28913a83
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Update task definition JSON
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
+        with:
+          task-definition: arn:aws:ecs:eu-central-1:567653862007:task-definition/tct-example-api:1
+          container-name: api
+          image: ${{ vars.DOCKER_IMAGE_REPO }}:${{ github.event.inputs.version }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: tct-example-api
+          cluster: example
+          wait-for-service-stability: true
