@@ -43,7 +43,7 @@ jobs:
           VERSION=$(curl -s https://hub.docker.com/v2/namespaces/0rxa/repositories/tct-example-api/tags \
             | jq --arg VERSION ${{ github.event.inputs.version }} -r '.results[] | select( .name == $VERSION ).name')
           
-          test -z $VERSION && exit 1
+          test -n $VERSION
       
       
   deploy:
