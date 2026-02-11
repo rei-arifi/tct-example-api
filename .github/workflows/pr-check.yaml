@@ -121,5 +121,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./api
+          cache-from: type=registry,ref=user/app:latest
+          cache-to: type=inline
           push: true
           tags: ${{ vars.DOCKER_IMAGE_REPO }}:${{ env.APP_VERSION }}
