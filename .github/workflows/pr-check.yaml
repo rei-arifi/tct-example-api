@@ -103,7 +103,7 @@ jobs:
       - name: Construct PR Version
         run: |+
           #!/bin/bash
-          echo "APP_VERSION=${{ github.event.pull_request.number }}-${{ env.SEMANTIC_VERSION }}" >> $GITHUB_ENV
+          echo "APP_VERSION=PR-${{ github.event.pull_request.number }}-${{ env.SEMANTIC_VERSION }}" >> $GITHUB_ENV
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
