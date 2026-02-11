@@ -35,7 +35,7 @@ jobs:
         run: |+
           #!/bin/bash
           
-          CURRENT_VERSION=$(git show 'origin/main:api/package.json' | jq -r '.version')
+          CURRENT_VERSION=$(cat api/package.json | jq -r '.version')
           echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
 
       - name: Retreive change level
