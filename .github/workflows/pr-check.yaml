@@ -97,6 +97,9 @@ jobs:
       SEMANTIC_VERSION: ${{ needs.validate.outputs.SEMANTIC_VERSION }}
 
     steps:
+      # Pull the repository
+      - uses: actions/checkout@v4
+
       - name: Construct PR Version
         run: |+
           #!/bin/bash
