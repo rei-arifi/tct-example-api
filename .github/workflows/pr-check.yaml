@@ -68,10 +68,10 @@ jobs:
           #!/bin/bash
 
           git show main:api/package.json > package.json
-          NEW_VERSION=$(npm version "$CHANGE_LEVEL")
+          NEW_VERSION=$(npm version "${{ env.CHANGE_LEVEL }}")
           
-          if ! [[ "$NEW_VERSION" == "v$CURRENT_VERSION"]]; then
-            ERROR_MESSAGE="Error: Change level is $CHANGE_LEVEL; Version "$NEW_VERSION" expected"
+          if ! [[ "${{ env.NEW_VERSION }}" == "v${{ env.CURRENT_VERSION }}"]]; then
+            ERROR_MESSAGE="Error: Change level is ${{ env.CHANGE_LEVEL }}; Version "${{ env.NEW_VERSION }}" expected"
             echo "::error $ERROR_MESSAGE"
             echo "Change validation failed; $ERROR_MESSAGE" >> $GITHUB_STEP_SUMMARY
             exit 1
