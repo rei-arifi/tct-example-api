@@ -24,6 +24,9 @@ jobs:
     steps:
       # Pull the repository
       - uses: actions/checkout@v4
+      - name: debug
+        run: |+
+          git --version
 
       - name: Retreive current version
         run: |+
@@ -68,9 +71,9 @@ jobs:
           #!/bin/bash
 
           git show main:api/package.json > package.json
-          NEW_VERSION=$(npm version "${{ env.CHANGE_LEVEL }}")
+          NEW_VERSION=$(npm version ${{ env.CHANGE_LEVEL }})
           
-          if ! [[ "${{ env.NEW_VERSION }}" == "v${{ env.CURRENT_VERSION }}"]]; then
+          if ! [[ "$NEW_VERSION" == "v${{ env.CURRENT_VERSION }}"]]; then
             ERROR_MESSAGE="Error: Change level is ${{ env.CHANGE_LEVEL }}; Version "${{ env.NEW_VERSION }}" expected"
             echo "::error $ERROR_MESSAGE"
             echo "Change validation failed; $ERROR_MESSAGE" >> $GITHUB_STEP_SUMMARY
