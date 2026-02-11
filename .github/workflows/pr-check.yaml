@@ -1,0 +1,127 @@
+# Name of the workflow
+name: api-pr-check
+
+# pr-check = CI
+# automation
+# CD
+
+# Name of the specific run
+run-name: ${{ github.event.pull_request.title }} / ${{ github.event.pull_request.number }}
+
+# Specify when the workflow runs
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
+
+jobs:
+  # Verify that application has bumped semantic version
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      # Pull the repository
+      - uses: actions/checkout@v4
+      
+      - name: Ensure main is fetched
+        run: git fetch origin main
+
+      - name: debug
+        run: git --version
+
+      - name: Retreive current version
+        run: |+
+          #!/bin/bash
+          
+          CURRENT_VERSION=$(cat api/package.json | jq -r '.version')
+          echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
+
+      - name: Retreive change level
+        run: |+
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          echo "PR_TITLE=$PR_TITLE" >> $GITHUB_ENV
+          
+      - name: Change level is patch
+        if: ${{ startsWith(env.PR_TITLE, 'fix:') }}
+        run: echo "CHANGE_LEVEL=patch" >> $GITHUB_ENV
+          
+      - name: Change level is minor
+        if: ${{ startsWith(env.PR_TITLE, 'feat:') }}
+        run: echo "CHANGE_LEVEL=minor" >> $GITHUB_ENV
+          
+      - name: Change level is major
+        if: ${{ startsWith(env.PR_TITLE, 'BREAKING_CHANGE:') }}
+        run: echo "CHANGE_LEVEL=major" >> $GITHUB_ENV
+          
+      - name: Ensure CHANGE_LEVEL is set
+        run: |+
+          #!/bin/bash
+          
+          # Exit early if variable is set
+          test -z $CHANGE_LEVEL || exit 0
+
+          ERROR_MESSAGE="Error: CHANGE_LEVEL is not set. Please make sure the PR title begins with 'fix:', 'feat:', or 'BREAKING_CHANGE:'"
+          echo "::error $ERROR_MESSAGE"
+          echo "PR Title Validation Failed; $ERROR_MESSAGE" >> $GITHUB_STEP_SUMMARY
+          
+          exit 1
+          
+      - name: Validate change level
+        id: validate_change_level
+        working-directory: api
+        run: |+
+          #!/bin/bash
+
+          git show 'origin/main:api/package.json' > package.json
+          NEW_VERSION=$(npm version ${{ env.CHANGE_LEVEL }})
+          
+          if ! [[ "$NEW_VERSION" == "v${{ env.CURRENT_VERSION }}" ]]; then
+            ERROR_MESSAGE="Error: Change level is ${{ env.CHANGE_LEVEL }}; Version "$NEW_VERSION" expected"
+            echo "::error $ERROR_MESSAGE"
+            echo "Change validation failed; $ERROR_MESSAGE" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          
+          exit 0
+    outputs:
+      SEMANTIC_VERSION: ${{ steps.validate_change_level.outputs.version }}
+          
+  build:
+    needs: [ "validate" ]
+    runs-on: ubuntu-latest
+    env:
+      SEMANTIC_VERSION: ${{ needs.validate.outputs.SEMANTIC_VERSION }}
+
+    steps:
+      # Pull the repository
+      - uses: actions/checkout@v4
+
+      - name: Construct PR Version
+        run: |+
+          #!/bin/bash
+          echo "APP_VERSION=PR-${{ github.event.pull_request.number }}-${{ env.SEMANTIC_VERSION }}" >> $GITHUB_ENV
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./api
+          cache-from: type=registry,ref=user/app:latest
+          cache-to: type=inline
+          push: true
+          tags: ${{ vars.DOCKER_IMAGE_REPO }}:${{ env.APP_VERSION }}
