@@ -24,6 +24,8 @@ jobs:
     steps:
       # Pull the repository
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
       
       - name: Ensure main is fetched
         run: git pull
