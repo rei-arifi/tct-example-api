@@ -24,13 +24,12 @@ jobs:
     steps:
       # Pull the repository
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      
+      - name: Ensure main is fetched
+        run: git fetch origin main
 
       - name: debug
-        run: |+
-          git --version
-          git rev-parse HEAD
+        run: git --version
 
       - name: Retreive current version
         run: |+
