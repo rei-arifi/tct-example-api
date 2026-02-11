@@ -2,7 +2,7 @@
 name: deploy
 
 # Name of the specific run
-run-name: ${{ github.event.input.environment }} / ${{ github.event.input.version }}
+run-name: ${{ github.event.inputs.environment }} / ${{ github.event.inputs.version }}
 
 # Specify when the workflow runs
 on:
@@ -32,16 +32,16 @@ jobs:
       
       # Forbid PR version deployments to production
       - name: validate version/environment
-        if: ${{ github.event.input.environment == 'production' }}
+        if: ${{ github.event.inputs.environment == 'production' }}
         run: |+
           # `grep -v` will fail if it FINDS 'PR' in the input string
-          echo ${{ github.event.input.version }} | grep -v PR
+          echo ${{ github.event.inputs.version }} | grep -v PR
 
       # Check if image exists
       - name: Check if image exists
         run: |+
           VERSION=$(curl -s https://hub.docker.com/v2/namespaces/0rxa/repositories/tct-example-api/tags \
-            | jq --arg VERSION ${{ github.event.input.version }} -r '.results[] | select( .name == $VERSION ).name')
+            | jq --arg VERSION ${{ github.event.inputs.version }} -r '.results[] | select( .name == $VERSION ).name')
           
           test -z $VERSION && exit 1
       
