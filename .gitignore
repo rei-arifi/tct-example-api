@@ -3,3 +3,5 @@ node_modules
 api/counter.json
 sdk/dist/
 sdk/src/client/
+
+.terraform

@@ -4,6 +4,14 @@ name: deploy
 # Name of the specific run
 run-name: ${{ github.event.inputs.environment }} / ${{ github.event.inputs.version }}
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+env:
+  TASK_DEFINITION_ARN: arn:aws:ecs:eu-central-1:567653862007:task-definition/tct-example-api
+  
+
 # Specify when the workflow runs
 on:
   workflow_dispatch:
@@ -57,11 +65,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      - name: Pull ECS Task Definition
+        shell: bash
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${{ env.TASK_DEFINITION_ARN }}" \
+            --query taskDefinition \
+            > task-definition.json
+
       - name: Update task definition JSON
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
         with:
-          task-definition: arn:aws:ecs:eu-central-1:567653862007:task-definition/tct-example-api:1
+          task-definition: ./task-definition.json
           container-name: api
           image: ${{ vars.DOCKER_IMAGE_REPO }}:${{ github.event.inputs.version }}
 
