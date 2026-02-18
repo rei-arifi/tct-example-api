@@ -25,6 +25,14 @@ app.use(
     }),
 );
 
+// fail
+app.get("/fail", async(req, res) => {
+    res.status(500).json({
+      success: false,
+      error: 'Simulated failure'
+    });
+})
+
 // test comment
 app.get("/health/live", async(req, res) => {
     res.status(200).json({
