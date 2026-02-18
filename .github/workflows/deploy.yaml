@@ -5,7 +5,7 @@ name: deploy
 run-name: ${{ github.event.inputs.environment }} / ${{ github.event.inputs.version }}
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: ${{ github.event.inputs.environment }}
   cancel-in-progress: true
 
 env:
