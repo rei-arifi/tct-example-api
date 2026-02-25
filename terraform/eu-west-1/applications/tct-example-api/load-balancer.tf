@@ -3,12 +3,12 @@ resource "aws_lb" "api_ext" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [
-    "sg-0f2afb6dcef8dcce3", // load-balancer
-    "sg-0348422414701963a", // egress
+    "sg-04e6280606a0209cb", // load-balancer
+    "sg-00a5e0d0032cdebb0", // egress
   ]
   subnets            = [
-    "subnet-0c85acf5db67350b3", // tct-public-eu-central-1a
-    "subnet-010b0945e032cb9f3", // tct-public-eu-central-1b
+    "subnet-0466538b241f0e6bd", // tct-public-eu-west-1a
+    "subnet-0d8fb9b359f723d8b", // tct-public-eu-west-1b
   ]
 
   enable_deletion_protection = false
